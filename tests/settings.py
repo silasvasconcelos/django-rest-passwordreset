@@ -42,7 +42,10 @@ INSTALLED_APPS = [
     'rest_framework',
 
     # include multi token auth
-    'django_rest_passwordreset'
+    'django_rest_passwordreset',
+
+    # test app
+    'user_id_uuid_testapp',
 ]
 
 MIDDLEWARE = [
@@ -123,3 +126,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+AUTH_USER_MODEL = "user_id_uuid_testapp.User"
+
+REST_FRAMEWORK = {
+    "DEFAULT_THROTTLE_RATES": {
+        "django-rest-passwordreset-request-token": "99999/second",
+        "django-rest-passwordreset-request-token-test-scope": "1/day",
+    },
+}

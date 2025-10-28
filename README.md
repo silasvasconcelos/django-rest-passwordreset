@@ -1,7 +1,7 @@
 # Django Rest Password Reset
 
 [![PyPI version](https://img.shields.io/pypi/v/django-rest-passwordreset.svg)](https://pypi.org/project/django-rest-passwordreset/)
-[![build-and-test actions status](https://github.com/anexia-it/django-rest-passwordreset/workflows/build-and-test/badge.svg)](https://github.com/anexia-it/django-rest-passwordreset/actions)
+[![build-and-test actions status](https://github.com/anexia-it/django-rest-passwordreset/actions/workflows/test.yml/badge.svg)](https://github.com/anexia-it/django-rest-passwordreset/actions)
 [![Codecov](https://img.shields.io/codecov/c/gh/anexia-it/django-rest-passwordreset)](https://codecov.io/gh/anexia-it/django-rest-passwordreset)
 
 This python package provides a simple password reset strategy for django rest framework, where users can request password 
@@ -66,8 +66,8 @@ where `${API_URL}/` is the url specified in your *urls.py* (e.g., `api/password_
 ### Signals
 
 * ``reset_password_token_created(sender, instance, reset_password_token)`` Fired when a reset password token is generated
-* ``pre_password_reset(sender, user)`` - fired just before a password is being reset
-* ``post_password_reset(sender, user)`` - fired after a password has been reset
+* ``pre_password_reset(sender, user, reset_password_token)`` - fired just before a password is being reset
+* ``post_password_reset(sender, user, reset_password_token)`` - fired after a password has been reset
 
 ### Example for sending an e-mail
 
@@ -163,7 +163,7 @@ DJANGO_REST_PASSWORDRESET_IP_ADDRESS_HEADER = 'HTTP_X_FORWARDED_FOR'
 The same is true for the user agent:
 
 ```python
-HTTP_USER_AGENT_HEADER = 'HTTP_USER_AGENT'
+DJANGO_REST_PASSWORDRESET_HTTP_USER_AGENT_HEADER = 'HTTP_USER_AGENT'
 ```
 
 ## Custom Token Generator
@@ -257,18 +257,34 @@ class RandomStringTokenGenerator(BaseTokenGenerator):
 ```
 
 
+### Throttling
+
+The endpoint to request a reset password token provides throttling.
+Per default the throttling rate is `3/day` per IP address.
+
+The throttling rate can be customized using the `REST_FRAMEWORK` setting and the scope `"django-rest-passwordreset-request-token"`:
+
+```
+REST_FRAMEWORK = {"DEFAULT_THROTTLE_RATES": {"django-rest-passwordreset-request-token": "5/hour"}}
+```
+
+See also: https://www.django-rest-framework.org/api-guide/throttling/#setting-the-throttling-policy
+
+
 ## Compatibility Matrix
 
 This library should be compatible with the latest Django and Django Rest Framework Versions. For reference, here is
 a matrix showing the guaranteed and tested compatibility.
 
-django-rest-passwordreset Version | Django Versions | Django Rest Framework Versions | Python |
---------------------------------- | --------------- | ------------------------------ | ------ |
+django-rest-passwordreset Version | Django Versions     | Django Rest Framework Versions | Python |
+--------------------------------- |---------------------| ------------------------------ | ------ |
 0.9.7 | 1.8, 1.11, 2.0, 2.1 | 3.6 - 3.9 | 2.7
 1.0 | 1.11, 2.0, 2.2 | 3.6 - 3.9 | 2.7
 1.1 | 1.11, 2.2 | 3.6 - 3.9 | 2.7
 1.2 | 2.2, 3.0, 3.1 | 3.10, 3.11 | 3.5 - 3.8
-
+1.3 | 3.2, 4.0, 4.1 | 3.12, 3.13, 3.14 | 3.7 - 3.10
+1.4 | 3.2, 4.2, 5.0 | 3.13, 3.14 | 3.8 - 3.12
+1.5 | 4.2, 5.0, 5.1 | 3.15 | 3.9 - 3.13
 
 ## Documentation / Browsable API
 
@@ -381,11 +397,19 @@ This library tries to follow the unix philosophy of "do one thing and do it well
 See folder [tests/](tests/). Basically, all endpoints are covered with multiple
 unit tests.
 
-Use this code snippet to run tests:
+Follow below instructions to run the tests.
+You may exchange the installed Django and DRF versions according to your requirements. 
+:warning: Depending on your local environment settings you might need to explicitly call `python3` instead of `python`.
 ```bash
-python setup.py install
-cd tests
-python manage.py test
+# install dependencies
+python -m pip install --upgrade pip
+pip install -r tests/requirements.txt
+
+# setup environment
+pip install -e .
+
+# run tests
+cd tests && python manage.py test
 ```
 
 ## Release on PyPi
